@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>焚决 · 提示词库</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 壁纸层 -->
+<div id="wallpaper"></div>
+
+<!-- 自绘标题栏（无边框窗口） -->
+<div class="titlebar" id="titlebar">
+  <div class="tb-left">
+    <span class="tb-dot"></span>
+    <span class="tb-name">焚决 · 提示词库</span>
+  </div>
+  <div class="tb-right">
+    <button class="wbtn" id="wMin" title="最小化" aria-label="最小化">
+      <svg viewBox="0 0 10 10"><path d="M0 5h10"/></svg></button>
+    <button class="wbtn" id="wMax" title="最大化" aria-label="最大化">
+      <svg viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" rx="1.5"/></svg></button>
+    <button class="wbtn close" id="wClose" title="关闭" aria-label="关闭">
+      <svg viewBox="0 0 10 10"><path d="M0.5 0.5l9 9M9.5 0.5l-9 9"/></svg></button>
+  </div>
+</div>
+
+<!-- 工具栏（iOS 导航栏） -->
+<header class="toolbar glass">
+  <div class="bar-left">
+    <span class="brand">焚决</span>
+    <span class="count" id="count">共 0 条</span>
+    <span class="divider"></span>
+    <!-- 开关：iOS Switch + 标签（开关在左，标签在右） -->
+    <button class="sw" id="chkPrefix" role="switch" aria-checked="false">
+      <span class="tb"></span><span class="lb">前缀</span></button>
+    <button class="sw" id="chkSuffix" role="switch" aria-checked="false">
+      <span class="tb"></span><span class="lb">尾缀</span></button>
+    <span class="divider"></span>
+    <button class="sw" id="chkLock" role="switch" aria-checked="true"
+            title="锁定列表：锁定后不可拖动排序">
+      <span class="tb"></span><span class="lb">列表锁</span></button>
+  </div>
+  <div class="bar-right">
+    <button class="btn" id="btnExport">导出备份</button>
+    <button class="btn" id="btnImport">导入备份</button>
+    <button class="btn" id="btnRestore">恢复原始</button>
+    <span class="divider"></span>
+    <button class="btn" id="btnCustom">自定义</button>
+    <span class="divider"></span>
+    <button class="btn" id="btnSettings">设置</button>
+  </div>
+</header>
+
+<!-- 主体：iOS 分栏 -->
+<main class="wrap">
+  <aside class="side">
+    <div class="search">
+      <input type="search" id="q" placeholder="搜索标题或内容" aria-label="搜索">
+    </div>
+    <div class="list" id="list"></div>
+  </aside>
+
+  <section class="detail">
+    <div class="detail-head">
+      <!-- 手机专用：返回列表。桌面断点下 display:none -->
+      <button class="back-btn" id="btnBack" aria-label="返回列表">
+        <svg viewBox="0 0 12 20" aria-hidden="true">
+          <path d="M10 2L2 10l8 8"/></svg>
+        <span>列表</span>
+      </button>
+      <div class="title-row">
+        <h1 id="dTitle">—</h1>
+        <span class="meta" id="dMeta"></span>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btnCopy">复制</button>
+        <button class="btn" id="btnEdit">编辑</button>
+        <button class="btn" id="btnNew">新建</button>
+        <button class="btn danger" id="btnDelete">删除</button>
+      </div>
+    </div>
+    <div class="body-view" id="dBody"></div>
+  </section>
+</main>
+
+<!-- 状态栏 -->
+<footer class="status glass">
+  <span id="status">就绪</span>
+  <span class="credit">软件由 <a href="#" id="devLink">装杯大王</a> 开发</span>
+</footer>
+
+<!-- 编辑弹窗（iOS Sheet） -->
+<div class="modal-mask" id="editMask">
+  <div class="modal">
+    <h2 id="editTitle">编辑提示词</h2>
+    <div class="modal-body">
+      <label class="field-label" for="fTitle">标题</label>
+      <input type="text" id="fTitle" class="input" placeholder="例如：马甲线">
+      <label class="field-label" for="fBody" style="margin-top:16px">提示词正文</label>
+      <textarea id="fBody" class="input textarea" placeholder="在这里输入提示词…"></textarea>
+    </div>
+    <div class="modal-foot">
+      <span class="charcount" id="fCount"></span>
+      <button class="btn" id="editCancel">取消</button>
+      <button class="btn primary" id="editSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 自定义弹窗 -->
+<div class="modal-mask" id="customMask">
+  <div class="modal wide">
+    <h2>自定义</h2>
+    <div class="modal-body">
+
+      <!-- 分组：配色方案 -->
+      <div class="group-title">配色方案</div>
+      <div class="group" style="padding:0">
+        <div class="scheme-grid" id="schemeGrid"></div>
+      </div>
+
+      <!-- 分组：自定义配色 -->
+      <div class="group-title">自定义配色</div>
+      <div class="group">
+        <div class="color-row" id="colorRow">
+          <button class="csw" data-key="customBg" aria-label="面板底色">
+            <span class="csw-chip"></span>
+            <span class="csw-text">
+              <span class="csw-name">面板底色</span>
+              <span class="csw-hex">#F2F2F7</span>
+            </span>
+          </button>
+          <button class="csw" data-key="customFg" aria-label="正文字色">
+            <span class="csw-chip"></span>
+            <span class="csw-text">
+              <span class="csw-name">正文字色</span>
+              <span class="csw-hex">#1C1C1E</span>
+            </span>
+          </button>
+          <button class="csw" data-key="customAccent" aria-label="强调色">
+            <span class="csw-chip"></span>
+            <span class="csw-text">
+              <span class="csw-name">强调色</span>
+              <span class="csw-hex">#8FA8C8</span>
+            </span>
+          </button>
+        </div>
+        <!-- 原生取色器藏在下面，点色板时触发 -->
+        <input type="color" id="cBg" class="csw-native" tabindex="-1" aria-hidden="true">
+        <input type="color" id="cFg" class="csw-native" tabindex="-1" aria-hidden="true">
+        <input type="color" id="cAc" class="csw-native" tabindex="-1" aria-hidden="true">
+        <div class="row-hint">点色块可用系统取色器自定义；选上方方案会覆盖这里。</div>
+      </div>
+
+      <!-- 分组：壁纸 -->
+      <div class="group-title">壁纸</div>
+      <div class="group">
+        <div class="row">
+          <span class="row-label">图片</span>
+          <div class="row-body">
+            <input type="text" id="wPath" class="input" placeholder="未选择壁纸"
+                   style="flex:1;min-width:0" aria-label="壁纸路径">
+            <button class="btn" id="wPick">浏览</button>
+            <button class="btn plain" id="wClear">移除</button>
+          </div>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">面板透明度</span>
+          <input type="range" id="sAlpha" min="0" max="100" value="55"
+                 aria-label="面板透明度">
+          <span class="slider-val" id="vAlpha">55%</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">毛玻璃</span>
+          <input type="range" id="sGlass" min="0" max="40" value="18"
+                 aria-label="毛玻璃强度">
+          <span class="slider-val" id="vGlass">18</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">壁纸浓度</span>
+          <input type="range" id="sOpacity" min="0" max="100" value="100"
+                 aria-label="壁纸浓度">
+          <span class="slider-val" id="vOpacity">100%</span>
+        </div>
+        <div class="row-hint">
+          面板透明度越低，壁纸越透出来（推荐 40%~60%）；毛玻璃数值越大越柔。
+        </div>
+      </div>
+
+      <!-- 分组：性能（HIG：开关放在列表行里） -->
+      <div class="group-title">性能</div>
+      <div class="group">
+        <div class="row">
+          <span class="row-label" style="flex:1">性能模式</span>
+          <button class="switch" id="chkLite" role="switch" aria-checked="false"
+                  aria-label="性能模式"></button>
+        </div>
+        <div class="row-hint">降低毛玻璃强度并关闭噪点，老旧显卡更流畅。</div>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="customCancel">取消</button>
+      <button class="btn" id="customReset">恢复默认</button>
+      <button class="btn primary" id="customApply">应用</button>
+    </div>
+  </div>
+</div>
+
+<!-- 设置弹窗 -->
+<div class="modal-mask" id="settingsMask">
+  <div class="modal">
+    <h2>设置</h2>
+    <div class="modal-body">
+      <div class="group-title">数据位置</div>
+      <div class="group">
+        <div class="kv"><span>提示词库</span><code id="pPrompts">—</code></div>
+        <div class="kv"><span>配置文件</span><code id="pConfig">—</code></div>
+        <div class="row-hint">
+          前缀 / 尾缀的内容存在配置文件里，直接用记事本编辑即可。
+          换电脑时把整个数据文件夹拷过去就能带走全部内容。
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="openDataDir">打开数据文件夹</button>
+      <button class="btn primary" id="settingsClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 浮层 -->
+<div class="ctxmenu" id="ctxMenu"></div>
+<div class="tooltip" id="tooltip"></div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
